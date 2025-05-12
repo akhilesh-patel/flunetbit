@@ -1,0 +1,23 @@
+services:
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    labels:
+      - "service=loki-service"
+    volumes:
+      - ./loki-local-config.yaml:/etc/loki/local-config.yaml
+      - loki-data:/loki
+    networks:
+      - loki-net
+    restart: unless-stopped
+
+volumes:
+  loki-data:
+
+networks:
+  loki-net:
+    driver: bridge
+

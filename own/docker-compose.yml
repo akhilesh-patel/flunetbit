@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  react-app:
+    image: akhileshpatel123/react-app
+    container_name: react-app
+    labels:
+      - "com.docker.compose.service=react-app"
+      - "service=react-app-service"
+    ports:
+      - "8081:80"  # Exposes NGINX on localhost:8080
+    networks:
+      - loki-net
+    restart: unless-stopped
+networks:
+  loki-net:
+    driver: bridge
+

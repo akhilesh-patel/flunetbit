@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  fluentbit:
+    image: fluent/fluent-bit:latest
+    container_name: fluentbit
+    environment:
+      - FLUENT_UID=0
+    labels:
+      - "service=fluentbit-service"
+    volumes:
+      - ./fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - ./parsers.conf:/fluent-bit/etc/parsers.conf
+      - ./extract_name.lua:/fluent-bit/etc/extract_name.lua
+      - ./extract_service.lua:/fluent-bit/etc/extract_service.lua
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./fluentbit-storage:/fluent-bit/storage
+    networks:
+      - loki-net
+    ports:
+      - "2020:2020"
+    restart: unless-stopped
+    user: root  # Ensures proper permissions
+
+networks:
+  loki-net:
+    driver: bridge  # Use internal bridge network instead of external
+
