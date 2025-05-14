@@ -1,0 +1,149 @@
+services:
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    labels:
+      - "service=grafana-service"
+      - "com.docker.compose.service=grafana"
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-clock-panel
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - loki-net
+    restart: unless-stopped
+    depends_on:
+      - loki
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    labels:
+      - "service=loki-service"
+      - "com.docker.compose.service=loki"
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki-local-config.yaml:/etc/loki/local-config.yaml
+      - loki-data:/loki
+    networks:
+      - loki-net
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  fluentbit:
+    image: fluent/fluent-bit:latest
+    container_name: fluentbit
+    environment:
+      - FLUENT_UID=0
+    labels:
+      - "service=fluentbit-service"
+      - "com.docker.compose.service=fluentbit"
+    volumes:
+      - ./fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - ./parsers.conf:/fluent-bit/etc/parsers.conf
+      - ./extract_name.lua:/fluent-bit/etc/extract_name.lua
+      - ./extract_service.lua:/fluent-bit/etc/extract_service.lua
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - fluentbit-storage:/fluentbit-storage
+    networks:
+      - loki-net
+    ports:
+      - "2020:2020"
+    restart: unless-stopped
+    user: root
+    command: /fluent-bit/bin/fluent-bit -c /fluent-bit/etc/fluent-bit.conf
+    depends_on:
+      - loki
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    labels:
+      - "service=nginx-service"
+      - "com.docker.compose.service=nginx"
+    ports:
+      - "8080:80"
+    networks:
+      - loki-net
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  react:
+    image: akhileshpatel123/react-app
+    container_name: react
+    labels:
+      - "service=react-service"
+      - "com.docker.compose.service=react"
+    ports:
+      - "8081:80"
+    networks:
+      - loki-net
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  frontend:
+    image: nginx:latest
+    container_name: frontend
+    labels:
+      - "service=frontend-service"
+      - "com.docker.compose.service=frontend"
+    ports:
+      - "8082:80"
+    networks:
+      - loki-net
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  apache2:
+    image: httpd
+    container_name: apache2
+    labels:
+      - "service=apache2-service"
+      - "com.docker.compose.service=apache2"
+    ports:
+      - "8083:80"
+    networks:
+      - loki-net
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  grafana-data:
+  loki-data:
+  fluentbit-storage:
+
+networks:
+  loki-net:
+    driver: bridge
