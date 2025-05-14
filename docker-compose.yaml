@@ -1,3 +1,5 @@
+version: '3'
+
 services:
   grafana:
     image: grafana/grafana:latest
@@ -18,6 +20,12 @@ services:
     restart: unless-stopped
     depends_on:
       - loki
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "{{.Name}}"
 
   loki:
     image: grafana/loki:latest
@@ -39,12 +47,17 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+        tag: "{{.Name}}"
 
   fluentbit:
     image: fluent/fluent-bit:latest
     container_name: fluentbit
     environment:
       - FLUENT_UID=0
+      - container_id=${container_id}
+      - container_name=${container_name}
+      - service_name=${service_name}
+      - hostname=${HOSTNAME}
     labels:
       - "service=fluentbit-service"
       - "com.docker.compose.service=fluentbit"
@@ -70,6 +83,7 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+        tag: "{{.Name}}"
 
   nginx:
     image: nginx:latest
@@ -87,6 +101,7 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+        tag: "{{.Name}}"
 
   react:
     image: akhileshpatel123/react-app
@@ -104,6 +119,7 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+        tag: "{{.Name}}"
 
   frontend:
     image: nginx:latest
@@ -121,6 +137,7 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+        tag: "{{.Name}}"
 
   apache2:
     image: httpd
@@ -138,6 +155,7 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+        tag: "{{.Name}}"
 
 volumes:
   grafana-data:
