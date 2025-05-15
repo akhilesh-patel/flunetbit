@@ -1,0 +1,64 @@
+version: '3'
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    labels:
+      - "container_name=mysql"
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    labels:
+      - "container_name=nginx"
+
+  fluent-bit:
+    image: fluent/fluent-bit:2.1.9
+    container_name: fluent-bit
+    volumes:
+      - ./fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - ./parsers.conf:/fluent-bit/etc/parsers.conf
+      - ./extract_container_name.lua:/fluent-bit/etc/extract_container_name.lua
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - fluent-bit-state:/tmp
+    depends_on:
+      - loki
+    
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./grafana-datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+    depends_on:
+      - loki
+
+volumes:
+  grafana-storage:
+  fluent-bit-state:
