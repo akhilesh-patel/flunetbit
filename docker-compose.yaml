@@ -1,9 +1,9 @@
 version: '3'
 
 services:
-  react:
+  app:
     image: akhileshpatel123/react-app
-    container_name: react-con
+    container_name: app
     logging:
       driver: "json-file"
       options:
@@ -14,8 +14,8 @@ services:
       - 8081:80
     labels:
 
-      - "container_name=react-con"
-      - "service_name=react-service"
+      - "container_name=app"
+      - "service_name=app"
   postgres:
     image: postgres:13.21-alpine3.20
     container_name: postgres

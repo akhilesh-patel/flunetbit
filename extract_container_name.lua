@@ -4,7 +4,7 @@ local os_env = os.getenv
 local container_service_map = {}
 
 -- Define the prefixes for env variable lookup (CONTAINER_X / SERVICE_X)
-local known_prefixes = { "NGINX", "MYSQL", "POSTGRES", "REACT" }  -- Add more as needed
+local known_prefixes = { "NGINX", "MYSQL", "POSTGRES", "APP" }  -- Add more as needed
 
 for _, prefix in ipairs(known_prefixes) do
     local container_env = os_env("CONTAINER_" .. prefix)

@@ -7,6 +7,6 @@ SERVICE_MYSQL=database
 CONTAINER_POSTGRES=postgres
 SERVICE_POSTGRES=postgres-database
 
-CONTAINER_REACT=react-con
-SERVICE_REACT=react-service
+CONTAINER_APP=app
+SERVICE_APP=app
 
