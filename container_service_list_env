@@ -1,0 +1,12 @@
+CONTAINER_NGINX=nginx
+SERVICE_NGINX=webserver
+
+CONTAINER_MYSQL=mysql
+SERVICE_MYSQL=database
+
+CONTAINER_POSTGRES=postgres
+SERVICE_POSTGRES=postgres-database
+
+CONTAINER_REACT=react-con
+SERVICE_REACT=react-service
+

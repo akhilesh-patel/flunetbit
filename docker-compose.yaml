@@ -1,6 +1,37 @@
 version: '3'
 
 services:
+  react:
+    image: akhileshpatel123/react-app
+    container_name: react-con
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "{{.Name}}"
+    ports:
+      - 8081:80
+    labels:
+
+      - "container_name=react-con"
+      - "service_name=react-service"
+  postgres:
+    image: postgres:13.21-alpine3.20
+    container_name: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: testdb
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "{{.Name}}"
+    labels:
+      - "container_name=postgres"
+      - "service_name=postgres-database"
   mysql:
     image: mysql:8
     container_name: mysql
@@ -11,8 +42,10 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+        tag: "{{.Name}}"
     labels:
       - "container_name=mysql"
+      - "service_name=database"
 
   nginx:
     image: nginx
@@ -22,12 +55,19 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+        tag: "{{.Name}}"
+    ports:
+      - 80:80
     labels:
+
       - "container_name=nginx"
+      - "service_name=webserver"
 
   fluent-bit:
     image: fluent/fluent-bit:2.1.9
     container_name: fluent-bit
+    env_file:
+     ./container_service_list_env 
     volumes:
       - ./fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
       - ./parsers.conf:/fluent-bit/etc/parsers.conf
@@ -43,6 +83,8 @@ services:
     ports:
       - "3100:3100"
     command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./local-config.yaml:/etc/loki/local-config.yaml
 
   grafana:
     image: grafana/grafana:latest
@@ -51,7 +93,6 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
     volumes:
       - grafana-storage:/var/lib/grafana
